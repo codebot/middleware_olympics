@@ -23,8 +23,8 @@ cons.
 | 1KB pub/sub | Send 1 KB messages at 1 kHz | Arm control | Latency and jitter |
 | 1MB pub/sub | Send 1 MB messages at 30 Hz | Raw image stream | Latency and jitter |
 | 10MB pub/sub | Send 10 MB messages at 10 Hz | Raw point clouds | Latency and jitter |
-| Good WiFi pub/sub | Various message over ideal WiFi | Mobile robots | Latency and jitter |
-| Bad WiFi pub/sub | Various message over intermittent WiFi | Mobile robots | Latency, jitter, drop rate, reconnect speed |
+| Good WiFi pub/sub | Various messages over ideal WiFi | Mobile robots | Latency and jitter |
+| Bad WiFi pub/sub | Various messages over intermittent WiFi | Mobile robots | Latency, jitter, drop rate, reconnect speed |
 
 # Setting up
 
