@@ -17,13 +17,14 @@ cons.
 
 ### The Events
 
-| Event Name | Description | Evaluation Metric |
-| --- | --- | --- |
-| Hello World | The smallest event. Send strings from A to B. | Pass/fail |
-| Big Slow Pub/Sub | Send 1 MB and 10 MB messages at various rates | Latency and Jitter |
-| Fast Small Pub/Sub | Send 256 byte messages at 1 kHz | Latency and jitter |
-| Good WiFi Pub/Sub | Various message sizes and rates over an ideal WiFi link | Latency and jitter |
-| Bad WiFi Pub/Sub | Various message sizes and rates over bad and intermittent WiFi | Latency, jitter, message drop rate, reconnect speed |
+| Event Name | Description | Robot Application | Evaluation Metric |
+| --- | --- | --- | --- |
+| Hello World | The smallest event. Send strings from A to B. | Mode switches / nav targets | Pass/fail |
+| 1KB pub/sub Pub/Sub | Send 1 KB byte messages at 1 kHz | Lowest-level manipulator control | Latency and jitter |
+| 1MB pub/sub | Send 1 MB blocks at 30 Hz | Raw image stream | Latency and jitter |
+| 10MB pub/sub | Send 10 MB blocks at 10 Hz | Raw point clouds | Latency and jitter |
+| Good WiFi Pub/Sub | Various message sizes and rates over an ideal WiFi link | Mobile robots | Latency and jitter |
+| Bad WiFi Pub/Sub | Various message sizes and rates over bad and intermittent WiFi | Mobile robots | Latency, jitter, message drop rate, reconnect speed |
 
 # Setting up
 
