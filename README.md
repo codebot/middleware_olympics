@@ -20,7 +20,7 @@ cons.
 | Event Name | Description | Robot Application | Evaluation Metric |
 | --- | --- | --- | --- |
 | Hello World | The smallest event. Send strings from A to B. | Mode switches / nav targets | Pass/fail |
-| 1KB pub/sub Pub/Sub | Send 1 KB byte messages at 1 kHz | Lowest-level manipulator control | Latency and jitter |
+| 1KB pub/sub Pub/Sub | Send 1 KB messages at 1 kHz | Lowest-level manipulator control | Latency and jitter |
 | 1MB pub/sub | Send 1 MB blocks at 30 Hz | Raw image stream | Latency and jitter |
 | 10MB pub/sub | Send 10 MB blocks at 10 Hz | Raw point clouds | Latency and jitter |
 | Good WiFi Pub/Sub | Various message sizes and rates over an ideal WiFi link | Mobile robots | Latency and jitter |
