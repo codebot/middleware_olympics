@@ -18,7 +18,7 @@ cons.
 ### The Events
 
 | Event Name | Description | Evaluation Metric |
-| --- | --- |
+| --- | --- | --- |
 | Hello World | The smallest event. Send strings from A to B. | Pass/fail |
 | Big Slow Pub/Sub | Send 1 MB and 10 MB messages at various rates | Latency and Jitter |
 | Fast Small Pub/Sub | Send 256 byte messages at 1 kHz | Latency and jitter |
