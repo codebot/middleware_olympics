@@ -10,6 +10,29 @@ cons.
 ## Contestants
 
  * Zenoh
+ * ZeroMQ (`ign_transport`)
  * DDS
    * Fast-RTPS (ROS 2)
    * Cyclone DDS (ROS 2)
+
+# Setting up
+
+### Zenoh
+
+https://github.com/eclipse-zenoh/zenoh/tree/rust-master
+
+First install rust:
+```
+mkdir -p ~/olympics/rust
+cd ~/olympics/rust
+wget https://sh.rustup.rs -O ./rustup
+chmod +x ./rustup
+```
+
+```
+mkdir ~/olympics
+cd ~/olympics
+git clone https://github.com/eclipse-zenoh/zenoh -b rust-master
+cd zenoh
+cargo build --release --all-targets
+```
