@@ -25,6 +25,7 @@ cons.
 | 10MB pub/sub | Send 10 MB messages at 10 Hz | Raw point clouds | Latency and jitter |
 | Good WiFi pub/sub | Various messages over ideal WiFi | Mobile robots | Latency and jitter |
 | Bad WiFi pub/sub | Various messages over intermittent WiFi | Mobile robots | Latency, jitter, drop rate, reconnect speed |
+| Discovery | Discover various (large) numbers of topics | Startup | Discovery time |
 
 # Setting up
 
