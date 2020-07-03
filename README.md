@@ -7,13 +7,23 @@ use cases. The goal of this repo is to have a bunch of little programs
 to experiment with various middlewares to learn more about their pros and
 cons.
 
-## Contestants
+### The Contestants
 
  * Zenoh
  * ZeroMQ (`ign_transport`)
  * DDS
    * Fast-RTPS (ROS 2)
    * Cyclone DDS (ROS 2)
+
+### The Events
+
+| Event Name | Description | Evaluation Metric |
+| --- | --- |
+| Hello World | The smallest event. Send strings from A to B. | Pass/fail |
+| Big Slow Pub/Sub | Send 1 MB and 10 MB messages at various rates | Latency and Jitter |
+| Fast Small Pub/Sub | Send 256 byte messages at 1 kHz | Latency and jitter |
+| Good WiFi Pub/Sub | Various message sizes and rates over an ideal WiFi link | Latency and jitter |
+| Bad WiFi Pub/Sub | Various message sizes and rates over bad and intermittent WiFi | Latency, jitter, message drop rate, reconnect speed |
 
 # Setting up
 
@@ -28,13 +38,14 @@ if you have Rust already installed in Ubuntu, you'll need to do this first:
 sudo apt remove rustc
 ```
 
-Now, install rust using its official installer:
+Now, install the latest rust using its official installer:
 ```
 mkdir -p ~/olympics/rust
 cd ~/olympics/rust
 wget https://sh.rustup.rs -O ./rustup-init
 chmod +x ./rustup-init
 ./rustup-init
+rustup install nightly
 ```
 
 Now if you close the current shell and open a new one, this should work:
@@ -49,5 +60,5 @@ mkdir ~/olympics
 cd ~/olympics
 git clone https://github.com/eclipse-zenoh/zenoh -b rust-master
 cd zenoh
-cargo build --release --all-targets
+cargo +nightly build --release --all-targets
 ```
