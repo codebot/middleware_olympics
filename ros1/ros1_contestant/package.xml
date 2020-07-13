@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ros1_contestant</name>
+  <version>0.0.0</version>
+  <description>ROS1 Middlware Olympics Contestant</description>
+  <maintainer email="morgan@osrfoundation.org">Morgan Quigley</maintainer>
+  <license>Apache 2.0</license>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>roslib</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>roslib</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export></export>
+</package>
