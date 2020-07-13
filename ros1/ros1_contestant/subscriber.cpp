@@ -8,6 +8,7 @@ class SubscriberNode
 public:
   ros::NodeHandle nh, nh_private;
   ros::Subscriber sub;
+  uint64_t expected_counter = 1;
 
   SubscriberNode()
   : nh(), nh_private("~")
@@ -22,6 +23,11 @@ void SubscriberNode::callback(
   const ros1_contestant::StampedBlob::ConstPtr& msg)
 {
   ros::Duration latency = ros::Time::now() - msg->stamp;
+  if (expected_counter != msg->counter)
+  {
+    ROS_ERROR("message skipped! %lu != %lu", msg->counter, expected_counter);
+  }
+  expected_counter = msg->counter + 1;
   printf("latency = %.6f\n", latency.toSec());
 }
 

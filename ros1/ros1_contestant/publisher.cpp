@@ -36,9 +36,11 @@ int PublisherNode::run(int argc, char **argv)
 
   pub = nh.advertise<ros1_contestant::StampedBlob>("blob", 10);
 
+  msg.counter = 0;
   ros::Rate pub_rate(publish_rate);
   while (ros::ok())
   {
+    msg.counter++;
     msg.stamp = ros::Time::now();
     pub.publish(msg);
     ros::spinOnce();
