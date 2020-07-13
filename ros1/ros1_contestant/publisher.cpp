@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "ros/ros.h"
 #include "ros1_contestant/StampedBlob.h"
 using std::string;
@@ -10,6 +11,9 @@ public:
   ros1_contestant::StampedBlob msg;
   ros::Publisher pub;
 
+  int blob_size = 0;
+  double publish_rate = 10.0;
+
   PublisherNode()
   : nh(), nh_private("~")
   {
@@ -20,16 +24,25 @@ public:
 
 int PublisherNode::run(int argc, char **argv)
 {
-  ROS_INFO("hello");
+  // stuff the blob with random data so it's not compressible
+  nh_private.param<int>("blob_size", blob_size, 0);
+  msg.blob.reserve(blob_size);
+  srandom(0);
+  for (int i = 0; i < blob_size; i++)
+    msg.blob.push_back(random() % 256);
+  ROS_INFO("blob_size = %zu", msg.blob.size());
+
+  nh_private.param<double>("publish_rate", publish_rate, 10.0);
+
   pub = nh.advertise<ros1_contestant::StampedBlob>("blob", 10);
 
-  ros::Rate pub_rate(1);
+  ros::Rate pub_rate(publish_rate);
   while (ros::ok())
   {
     msg.stamp = ros::Time::now();
     pub.publish(msg);
-    pub_rate.sleep();
     ros::spinOnce();
+    pub_rate.sleep();
   }
 }
 
