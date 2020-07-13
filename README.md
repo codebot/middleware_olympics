@@ -37,3 +37,17 @@ The goal of this repo is to have a bunch of little programs to experiment with v
 # Holding the Middleware Olympics
 
 Refer to the `README.md` file in the directory for each contestant for how to set up and run the events for that contestant.
+
+# Emulating sub-optimal networks
+
+It can be a pain to set up a "bad" network interntionally, but we can instead use `tc` to fake it:
+
+Add 10ms of "fake" latency:
+```
+sudo tc qdisc add dev lo root netem delay 10ms
+```
+
+Remove the "fake" latency:
+```
+sudo tc qdisc del dev lo root netem
+```

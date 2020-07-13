@@ -9,6 +9,7 @@ public:
   ros::NodeHandle nh, nh_private;
   ros::Subscriber sub;
   uint64_t expected_counter = 1;
+  bool tcp_nodelay = false;
 
   SubscriberNode()
   : nh(), nh_private("~")
@@ -33,8 +34,19 @@ void SubscriberNode::callback(
 
 int SubscriberNode::run(int argc, char **argv)
 {
+  nh_private.param<bool>("tcp_nodelay", tcp_nodelay, false);
+  ros::TransportHints hints;
+  if (tcp_nodelay)
+    hints = ros::TransportHints().tcpNoDelay();
+
+  sub = nh.subscribe(
+    "blob",
+    10,
+    &SubscriberNode::callback,
+    this,
+    hints);
+
   ROS_INFO("entering spin()...");
-  sub = nh.subscribe("blob", 10, &SubscriberNode::callback, this);
   ros::spin();
 }
 
