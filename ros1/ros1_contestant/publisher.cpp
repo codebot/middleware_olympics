@@ -13,6 +13,7 @@ public:
 
   int blob_size = 0;
   double publish_rate = 10.0;
+  int max_message_count = 0;
 
   PublisherNode()
   : nh(), nh_private("~")
@@ -30,9 +31,11 @@ int PublisherNode::run(int argc, char **argv)
   srandom(0);
   for (int i = 0; i < blob_size; i++)
     msg.blob.push_back(random() % 256);
-  ROS_INFO("blob_size = %zu", msg.blob.size());
 
   nh_private.param<double>("publish_rate", publish_rate, 10.0);
+
+  nh_private.param<int>("max_message_count", max_message_count, 0);
+  // ROS_INFO("pub max message_count: %d", max_message_count);
 
   pub = nh.advertise<ros1_contestant::StampedBlob>("blob", 10);
 
@@ -45,6 +48,13 @@ int PublisherNode::run(int argc, char **argv)
     pub.publish(msg);
     ros::spinOnce();
     pub_rate.sleep();
+
+    if (max_message_count && msg.counter > max_message_count)
+    {
+      ROS_INFO("publisher complete");
+      ros::spinOnce();
+      break;
+    }
   }
 }
 
