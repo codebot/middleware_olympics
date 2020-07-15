@@ -5,6 +5,52 @@ import signal
 import subprocess
 import time
 
+def run_ros2_pubsub(message_count, blob_size, rate):
+    subscriber = subprocess.Popen(
+        [
+            '/bin/bash',
+            '-c',
+            f'. build/ros2/install/setup.bash && ros2 run ros2_contestant subscriber --ros-args -p max_message_count:={message_count}'],
+        preexec_fn=os.setsid,
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+
+    time.sleep(1)
+
+    # send another 1 second of messages to cover the connection time
+    pub_message_count = message_count + 2 * int(rate)
+
+    publisher = subprocess.Popen(
+        [
+            '/bin/bash',
+            '-c',
+            f'. build/ros1/devel/setup.bash && rosrun ros1_contestant publisher _max_message_count:={pub_message_count} _publish_rate:={rate} _blob_size:={blob_size}'],
+        preexec_fn=os.setsid)
+
+    expected_time = 2 + message_count / rate
+    # print(f'waiting {expected_time} seconds for the event...')
+    time.sleep(expected_time)
+
+    subscriber_stdout, subscriber_stderr = subscriber.communicate()
+    stats = subscriber_stdout.split()
+
+    try:
+        os.killpg(os.getpgid(subscriber.pid), signal.SIGINT)
+        subscriber.wait(timeout=1)
+    except ProcessLookupError:
+        pass
+
+    try:
+        os.killpg(os.getpgid(publisher.pid), signal.SIGINT)
+        publisher.wait(timeout=1)
+    except ProcessLookupError:
+        pass
+
+    return [float(stats[0]), float(stats[1]), float(stats[2]), int(stats[3])]
+
+
+
 def run_ros1_pubsub(message_count, blob_size, rate):
     subscriber = subprocess.Popen(
         [

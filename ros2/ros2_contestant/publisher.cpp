@@ -8,12 +8,13 @@ using namespace std::chrono_literals;
 class PublisherNode : public rclcpp::Node
 {
 public:
-  PublisherNode();
-  void timer_callback();
-
   ros2_contestant::msg::StampedBlob msg;
   rclcpp::Publisher<ros2_contestant::msg::StampedBlob>::SharedPtr pub;
   rclcpp::TimerBase::SharedPtr timer;
+  int max_message_count = 0;
+
+  PublisherNode();
+  void timer_callback();
 };
 
 PublisherNode::PublisherNode()
@@ -26,6 +27,9 @@ PublisherNode::PublisherNode()
   for (int i = 0; i < blob_size; i++)
     msg.blob.push_back(random() % 256);
   RCLCPP_INFO(get_logger(), "blob size: %zu", msg.blob.size());
+
+  declare_parameter<int>("max_message_count", 0);
+  get_parameter("max_message_count", max_message_count);
 
   double publish_rate = 1.0;
   declare_parameter<double>("publish_rate", 1.0);
