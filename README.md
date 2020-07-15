@@ -9,6 +9,7 @@ The goal of this repo is to have a bunch of little programs to experiment with v
 
  * Raw TCP (to provide a baseline)
  * Raw UDP (to provide a baseline)
+ * ROS 1
  * MQTT/RabbitMQ
  * Zenoh
  * ZeroMQ ("pure", what others use)
