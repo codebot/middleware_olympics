@@ -83,7 +83,7 @@ int SubscriberNode::run(int argc, char **argv)
 
   sub = nh.subscribe(
     "blob",
-    10,
+    100,
     &SubscriberNode::callback,
     this,
     hints);

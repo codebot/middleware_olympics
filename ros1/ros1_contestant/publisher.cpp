@@ -37,7 +37,7 @@ int PublisherNode::run(int argc, char **argv)
   nh_private.param<int>("max_message_count", max_message_count, 0);
   // ROS_INFO("pub max message_count: %d", max_message_count);
 
-  pub = nh.advertise<ros1_contestant::StampedBlob>("blob", 10);
+  pub = nh.advertise<ros1_contestant::StampedBlob>("blob", 100);
 
   msg.counter = 0;
   ros::Rate pub_rate(publish_rate);
