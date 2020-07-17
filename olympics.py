@@ -76,30 +76,32 @@ def run_ros2_pubsub(rmw, message_count, blob_size, rate):
     return [float(stats[0]), float(stats[1]), float(stats[2]), int(stats[3])]
 
 
-def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay):
+def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay, roscore_host, pub_host, sub_host):
     subscriber = subprocess.Popen(
         [
-            '/bin/bash',
-            '-c',
-            f'. build/ros1/devel/setup.bash && rosrun ros1_contestant subscriber _max_message_count:={message_count} _tcp_nodelay:={str(tcp_nodelay).lower()}'],
+            'ssh',
+            '-t',
+            sub_host,
+            f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant subscriber _max_message_count:={message_count} _tcp_nodelay:={str(tcp_nodelay).lower()}"'],
         preexec_fn=os.setsid,
         universal_newlines=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
-    time.sleep(1)
+    time.sleep(2)
 
-    # send another 1 second of messages to cover the connection time
-    pub_message_count = message_count + 2 * int(rate)
+    # send more messages to cover the connection time
+    pub_message_count = message_count + 5 * int(rate)
 
     publisher = subprocess.Popen(
         [
-            '/bin/bash',
-            '-c',
-            f'. build/ros1/devel/setup.bash && rosrun ros1_contestant publisher _max_message_count:={pub_message_count} _publish_rate:={rate} _blob_size:={blob_size}'],
+            'ssh',
+            '-t',
+            pub_host,
+            f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant publisher _max_message_count:={pub_message_count} _publish_rate:={rate} _blob_size:={blob_size}"'],
         preexec_fn=os.setsid)
 
-    expected_time = 2 + message_count / rate
+    expected_time = 7 + message_count / rate
     # print(f'waiting {expected_time} seconds for the event...')
     time.sleep(expected_time)
 
@@ -121,20 +123,34 @@ def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay):
     return [float(stats[0]), float(stats[1]), float(stats[2]), int(stats[3])]
 
 
-def run_ros1(tcp_nodelay):
+def run_ros1(tcp_nodelay, pub_host, sub_host):
     print('starting roscore...')
+    roscore_host = pub_host
+
     roscore = subprocess.Popen(
-        ['/bin/bash', '-c', '. build/ros1/devel/setup.bash && roscore'],
+        [
+            'ssh',
+            '-t',
+            roscore_host,
+            '/bin/bash -c ". $HOME/middleware_olympics/build/ros1/devel/setup.bash && roscore"'
+        ],
         preexec_fn=os.setsid)
 
     print('wait a bit for roscore to start up...')
-    time.sleep(2)
+    time.sleep(10)
 
     f = open(f'ros1_{tcp_nodelay}.csv', 'w')
     for experiment in payloads_and_rates:
         payload = experiment[0]
         rate = experiment[1]
-        stats = run_ros1_pubsub(rate * 10, payload, rate, tcp_nodelay)
+        stats = run_ros1_pubsub(
+            rate * 10,
+            payload,
+            rate,
+            tcp_nodelay,
+            roscore_host,
+            pub_host,
+            sub_host)
         latency_avg = stats[0]
         latency_min = stats[1]
         latency_max = stats[2]
@@ -142,8 +158,9 @@ def run_ros1(tcp_nodelay):
         print(f'{payload} {rate} {latency_avg} {latency_min} {latency_max} {skips}')
         f.write(f'{payload},{rate},{latency_avg},{latency_min},{latency_max},{skips}\n')
         f.flush()
+        break
 
-    print('killing roscore...')
+    print('killing roscore...\n\n')
     try:
         os.killpg(os.getpgid(roscore.pid), signal.SIGINT)
         roscore.wait(timeout=1)
@@ -182,12 +199,14 @@ def run_cyclone():
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("contestant")
+    parser.add_argument('contestant')
+    parser.add_argument('--pub_host', default='localhost')
+    parser.add_argument('--sub_host', default='localhost')
     args = parser.parse_args()
     if args.contestant == 'ros1':
-        run_ros1(False)
+        run_ros1(False, args.pub_host, args.sub_host)
     elif args.contestant == 'ros1_tcpnodelay':
-        run_ros1(True)
+        run_ros1(True, args.pub_host, args.sub_host)
     elif args.contestant == 'cyclone':
         run_cyclone()
     elif args.contestant == 'fastrtps':
