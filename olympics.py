@@ -5,6 +5,28 @@ import signal
 import subprocess
 import time
 
+payloads_and_rates_wifi = [
+    [1, 500],
+    [10, 500],
+    [20, 500],
+    [40, 500],
+    [100, 500],
+    [200, 500],
+    [400, 500],
+    [1000, 500],
+    [2000, 500],
+    [4000, 100],
+    [10000, 100],
+    [20000, 100],
+    [40000, 50],
+    [100000, 10],
+    [200000, 10],
+    [400000, 5],
+    [1000000, 2],
+    [2000000, 1]
+]
+
+'''
 payloads_and_rates = [
     [1, 500],
     [10, 500],
@@ -29,14 +51,16 @@ payloads_and_rates = [
     [20000000, 10],
     [40000000, 5],
 ]
+'''
+payloads_and_rates = payloads_and_rates_wifi
 
-
-def run_ros2_pubsub(rmw, message_count, blob_size, rate):
+def run_ros2_pubsub(rmw, message_count, blob_size, rate, pub_host, sub_host):
     subscriber = subprocess.Popen(
         [
-            '/bin/bash',
-            '-c',
-            f'RMW_IMPLEMENTATION={rmw} . build/ros2/install/setup.bash && ros2 run ros2_contestant subscriber --ros-args -p max_message_count:={message_count}'],
+            'ssh',
+            '-t',
+            sub_host,
+            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant subscriber --ros-args -p max_message_count:={message_count}"'],
         preexec_fn=os.setsid,
         universal_newlines=True,
         stdout=subprocess.PIPE,
@@ -49,9 +73,10 @@ def run_ros2_pubsub(rmw, message_count, blob_size, rate):
 
     publisher = subprocess.Popen(
         [
-            '/bin/bash',
-            '-c',
-            f'RMW_IMPLEMENTATION={rmw} . build/ros2/install/setup.bash && ros2 run ros2_contestant publisher --ros-args -p max_message_count:={pub_message_count} -p publish_rate:={rate:.2f} -p blob_size:={blob_size}'],
+            'ssh',
+            '-t',
+            pub_host,
+            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant publisher --ros-args -p max_message_count:={pub_message_count} -p publish_rate:={rate:.2f} -p blob_size:={blob_size}"'],
         preexec_fn=os.setsid)
 
     expected_time = 4 + message_count / rate
@@ -158,7 +183,6 @@ def run_ros1(tcp_nodelay, pub_host, sub_host):
         print(f'{payload} {rate} {latency_avg} {latency_min} {latency_max} {skips}')
         f.write(f'{payload},{rate},{latency_avg},{latency_min},{latency_max},{skips}\n')
         f.flush()
-        break
 
     print('killing roscore...\n\n')
     try:
@@ -167,12 +191,12 @@ def run_ros1(tcp_nodelay, pub_host, sub_host):
     except ProcessLookupError:
         pass
 
-def run_fastrtps():
+def run_fastrtps(pub_host, sub_host):
     f = open('fastrtps.csv', 'w')
     for experiment in payloads_and_rates:
         payload = experiment[0]
         rate = experiment[1]
-        stats = run_ros2_pubsub('rmw_fastrtps_cpp', rate * 10, payload, rate)
+        stats = run_ros2_pubsub('rmw_fastrtps_cpp', rate * 10, payload, rate, pub_host, sub_host)
         latency_avg = stats[0]
         latency_min = stats[1]
         latency_max = stats[2]
@@ -181,12 +205,12 @@ def run_fastrtps():
         f.write(f'{payload},{rate},{latency_avg},{latency_min},{latency_max},{skips}\n')
         f.flush()
 
-def run_cyclone():
+def run_cyclone(pub_host, sub_host):
     f = open('cyclone.csv', 'w')
     for experiment in payloads_and_rates:
         payload = experiment[0]
         rate = experiment[1]
-        stats = run_ros2_pubsub('rmw_cyclonedds_cpp', rate * 10, payload, rate)
+        stats = run_ros2_pubsub('rmw_cyclonedds_cpp', rate * 10, payload, rate, pub_host, sub_host)
         latency_avg = stats[0]
         latency_min = stats[1]
         latency_max = stats[2]
@@ -208,8 +232,8 @@ if __name__=='__main__':
     elif args.contestant == 'ros1_tcpnodelay':
         run_ros1(True, args.pub_host, args.sub_host)
     elif args.contestant == 'cyclone':
-        run_cyclone()
+        run_cyclone(args.pub_host, args.sub_host)
     elif args.contestant == 'fastrtps':
-        run_fastrtps()
+        run_fastrtps(args.pub_host, args.sub_host)
     else:
         print(f'unknown contestant: {args.contestant}')

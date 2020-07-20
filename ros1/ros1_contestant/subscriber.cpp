@@ -95,7 +95,7 @@ int SubscriberNode::run(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "swabber_follower");
+  ros::init(argc, argv, "subscriber");
   SubscriberNode node;
   return node.run(argc, argv);
 }

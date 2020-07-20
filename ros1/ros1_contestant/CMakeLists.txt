@@ -38,6 +38,18 @@ add_dependencies(subscriber
   ${catkin_EXPORTED_TARGETS})
 target_link_libraries(subscriber ${catkin_LIBRARIES})
 
+add_executable(echo echo.cpp)
+add_dependencies(echo
+  ${ros1_contestant_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+target_link_libraries(echo ${catkin_LIBRARIES})
+
+add_executable(ping ping.cpp)
+add_dependencies(ping
+  ${ros1_contestant_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+target_link_libraries(ping ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##
