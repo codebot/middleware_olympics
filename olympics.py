@@ -102,12 +102,13 @@ def run_ros2_pubsub(rmw, message_count, blob_size, rate, pub_host, sub_host):
 
 
 def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay, roscore_host, pub_host, sub_host):
-    subscriber = subprocess.Popen(
+    print(f'run_ros1_pubsub({message_count}, {blob_size}, {rate})')
+
+    echo_process = subprocess.Popen(
         [
             'ssh',
-            '-t',
             sub_host,
-            f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant subscriber _max_message_count:={message_count} _tcp_nodelay:={str(tcp_nodelay).lower()}"'],
+            f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant echo _tcp_nodelay:={str(tcp_nodelay).lower()}"'],
         preexec_fn=os.setsid,
         universal_newlines=True,
         stdout=subprocess.PIPE,
@@ -116,33 +117,38 @@ def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay, roscore_host, p
     time.sleep(2)
 
     # send more messages to cover the connection time
-    pub_message_count = message_count + 5 * int(rate)
+    ping_message_count = message_count + 5 * int(rate)
 
-    publisher = subprocess.Popen(
+    ping_process = subprocess.Popen(
         [
             'ssh',
-            '-t',
             pub_host,
-            f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant publisher _max_message_count:={pub_message_count} _publish_rate:={rate} _blob_size:={blob_size}"'],
-        preexec_fn=os.setsid)
+            f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant ping _tcp_nodelay:={str(tcp_nodelay).lower()} _max_message_count:={ping_message_count} _publish_rate:={rate} _blob_size:={blob_size}"'],
+        preexec_fn=os.setsid,
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
 
     expected_time = 7 + message_count / rate
     # print(f'waiting {expected_time} seconds for the event...')
     time.sleep(expected_time)
 
-    subscriber_stdout, subscriber_stderr = subscriber.communicate()
-    stats = subscriber_stdout.split()
+    ping_stdout, ping_stderr = ping_process.communicate()
+
+    stats = ping_stdout.split()
 
     try:
-        os.killpg(os.getpgid(subscriber.pid), signal.SIGINT)
-        subscriber.wait(timeout=1)
+        os.killpg(os.getpgid(echo_process.pid), signal.SIGINT)
+        echo_process.wait(timeout=1)
     except ProcessLookupError:
+        #print('echo process lookup error')
         pass
 
     try:
-        os.killpg(os.getpgid(publisher.pid), signal.SIGINT)
-        publisher.wait(timeout=1)
+        os.killpg(os.getpgid(ping_process.pid), signal.SIGINT)
+        ping_process.wait(timeout=1)
     except ProcessLookupError:
+        #print('ping process lookup error')
         pass
 
     return [float(stats[0]), float(stats[1]), float(stats[2]), int(stats[3])]
@@ -153,16 +159,17 @@ def run_ros1(tcp_nodelay, pub_host, sub_host):
     roscore_host = pub_host
 
     roscore = subprocess.Popen(
-        [
-            'ssh',
-            '-t',
-            roscore_host,
-            '/bin/bash -c ". $HOME/middleware_olympics/build/ros1/devel/setup.bash && roscore"'
-        ],
-        preexec_fn=os.setsid)
+        ['. $HOME/middleware_olympics/build/ros1/devel/setup.bash && roscore'],
+        shell=True,
+        executable='/bin/bash',
+        preexec_fn=os.setsid,
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
 
     print('wait a bit for roscore to start up...')
-    time.sleep(10)
+    time.sleep(5)
+    print('assuming roscore is alive now')
 
     f = open(f'ros1_{tcp_nodelay}.csv', 'w')
     for experiment in payloads_and_rates:
@@ -189,7 +196,7 @@ def run_ros1(tcp_nodelay, pub_host, sub_host):
         os.killpg(os.getpgid(roscore.pid), signal.SIGINT)
         roscore.wait(timeout=1)
     except ProcessLookupError:
-        pass
+        print('roscore ProcessLookupError')
 
 def run_fastrtps(pub_host, sub_host):
     f = open('fastrtps.csv', 'w')

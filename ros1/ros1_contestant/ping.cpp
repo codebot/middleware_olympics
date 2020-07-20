@@ -43,8 +43,8 @@ void PingNode::callback(
   {
     latency_measurements.push_back(latency.toSec());
 
-    if (verbose)
-      printf("latency = %.6f\n", latency.toSec());
+    //if (verbose)
+    //  printf("latency = %.6f\n", latency.toSec());
   }
   else
   {
@@ -90,8 +90,7 @@ int PingNode::run(int argc, char **argv)
 
   while (ros::ok())
   {
-    const ros::Time t(ros::Time::now());
-    if ((t - t_last_publish).toSec() > publish_interval)
+    if ((ros::Time::now() - t_last_publish).toSec() > publish_interval)
     {
       // It's time to publish our next message. First, let's see if
       // we received the expected message echo by now
@@ -101,14 +100,15 @@ int PingNode::run(int argc, char **argv)
 
         if (verbose)
           ROS_ERROR(
-            "last_rx_counter != tx_msg.counter: %lu != %lu",
+            "last_rx_counter != tx_msg.counter: %lu != %lu  (%d)",
             tx_msg.counter,
-            last_tx_counter);
+            last_rx_counter,
+            num_skips);
       }
 
       // now let's send our next message
       tx_msg.counter++;
-      tx_msg.stamp = t;
+      tx_msg.stamp = ros::Time::now();
       pub.publish(tx_msg);
 
       last_tx_counter = tx_msg.counter;
@@ -120,6 +120,9 @@ int PingNode::run(int argc, char **argv)
     if (max_message_count && tx_msg.counter > max_message_count)
       break;
   }
+  ros::shutdown();
+
+  printf("num_skips = %d\n", num_skips);
 
   std::sort(latency_measurements.begin(), latency_measurements.end());
   double median = latency_measurements[latency_measurements.size()/2];
