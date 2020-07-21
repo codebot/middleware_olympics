@@ -6,10 +6,6 @@ import subprocess
 import time
 
 payloads_and_rates_wifi = [
-    [1, 500],
-    [10, 500],
-    [20, 500],
-    [40, 500],
     [100, 500],
     [200, 500],
     [400, 500],
@@ -23,7 +19,9 @@ payloads_and_rates_wifi = [
     [200000, 10],
     [400000, 5],
     [1000000, 2],
-    [2000000, 1]
+    [2000000, 1],
+    [4000000, 1],
+    [10000000, 1]
 ]
 
 '''
@@ -55,6 +53,7 @@ payloads_and_rates = [
 payloads_and_rates = payloads_and_rates_wifi
 
 def run_ros2_pubsub(rmw, message_count, blob_size, rate, pub_host, sub_host):
+    print(f'launching echo process on [{pub_host}]')
     echo_process = subprocess.Popen(
         [
             'ssh',
@@ -71,33 +70,37 @@ def run_ros2_pubsub(rmw, message_count, blob_size, rate, pub_host, sub_host):
     # send some bonus messages to cover the connection time
     ping_message_count = message_count + 2 * int(rate)
 
+    print(f'launching ping process on [{sub_host}]')
     ping_process = subprocess.Popen(
         [
             'ssh',
             '-t',
             pub_host,
-            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant ping --ros-args -p max_message_count:={ping_message_count} -p publish_rate:={rate:.2f} -p blob_size:={blob_size}"'],
+            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant ping --ros-args -p max_message_count:={ping_message_count} -p publish_rate:={rate:.2f} -p blob_size:={blob_size} -p startup_delay:=3.0"'],
         preexec_fn=os.setsid,
         universal_newlines=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
     expected_time = 4 + message_count / rate
-    # print(f'waiting {expected_time} seconds for the event...')
+    print(f'waiting {expected_time} seconds for completion...')
+
     time.sleep(expected_time)
 
+    print(f'collecting output...')
     ping_stdout, ping_stderr = ping_process.communicate()
     stats = ping_stdout.split()
 
+    print(f'killing processes...')
     try:
-        os.killpg(os.getpgid(subscriber.pid), signal.SIGINT)
-        subscriber.wait(timeout=1)
+        os.killpg(os.getpgid(echo_process.pid), signal.SIGINT)
+        echo_process.wait(timeout=1)
     except ProcessLookupError:
         pass
 
     try:
-        os.killpg(os.getpgid(publisher.pid), signal.SIGINT)
-        publisher.wait(timeout=1)
+        os.killpg(os.getpgid(ping_process.pid), signal.SIGINT)
+        ping_process.wait(timeout=1)
     except ProcessLookupError:
         pass
 
