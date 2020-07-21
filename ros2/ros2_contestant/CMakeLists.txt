@@ -30,12 +30,23 @@ ament_target_dependencies(subscriber rclcpp)
 rosidl_target_interfaces(subscriber
   ${PROJECT_NAME} rosidl_typesupport_cpp)
 
+add_executable(echo echo.cpp)
+ament_target_dependencies(echo rclcpp)
+rosidl_target_interfaces(echo
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+add_executable(ping ping.cpp)
+ament_target_dependencies(ping rclcpp)
+rosidl_target_interfaces(ping
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 ament_export_dependencies(rosidl_default_runtime)
 
 install(TARGETS
   publisher
   subscriber
+  echo
+  ping
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

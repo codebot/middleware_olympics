@@ -55,12 +55,12 @@ payloads_and_rates = [
 payloads_and_rates = payloads_and_rates_wifi
 
 def run_ros2_pubsub(rmw, message_count, blob_size, rate, pub_host, sub_host):
-    subscriber = subprocess.Popen(
+    echo_process = subprocess.Popen(
         [
             'ssh',
             '-t',
             sub_host,
-            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant subscriber --ros-args -p max_message_count:={message_count}"'],
+            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant echo"'],
         preexec_fn=os.setsid,
         universal_newlines=True,
         stdout=subprocess.PIPE,
@@ -68,23 +68,26 @@ def run_ros2_pubsub(rmw, message_count, blob_size, rate, pub_host, sub_host):
 
     time.sleep(1)
 
-    # send another 1 second of messages to cover the connection time
-    pub_message_count = message_count + 2 * int(rate)
+    # send some bonus messages to cover the connection time
+    ping_message_count = message_count + 2 * int(rate)
 
-    publisher = subprocess.Popen(
+    ping_process = subprocess.Popen(
         [
             'ssh',
             '-t',
             pub_host,
-            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant publisher --ros-args -p max_message_count:={pub_message_count} -p publish_rate:={rate:.2f} -p blob_size:={blob_size}"'],
-        preexec_fn=os.setsid)
+            f'/bin/bash -c "export RMW_IMPLEMENTATION={rmw} && . $HOME/middleware_olympics/build/ros2/install/setup.bash && ros2 run ros2_contestant ping --ros-args -p max_message_count:={ping_message_count} -p publish_rate:={rate:.2f} -p blob_size:={blob_size}"'],
+        preexec_fn=os.setsid,
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
 
     expected_time = 4 + message_count / rate
     # print(f'waiting {expected_time} seconds for the event...')
     time.sleep(expected_time)
 
-    subscriber_stdout, subscriber_stderr = subscriber.communicate()
-    stats = subscriber_stdout.split()
+    ping_stdout, ping_stderr = ping_process.communicate()
+    stats = ping_stdout.split()
 
     try:
         os.killpg(os.getpgid(subscriber.pid), signal.SIGINT)
@@ -98,15 +101,25 @@ def run_ros2_pubsub(rmw, message_count, blob_size, rate, pub_host, sub_host):
     except ProcessLookupError:
         pass
 
-    return [float(stats[0]), float(stats[1]), float(stats[2]), int(stats[3])]
+    try:
+        latency_avg = float(stats[0])
+        latency_min = float(stats[1])
+        latency_max = float(stats[2])
+        latency_skipped = int(stats[3])
+    except Exception as e:
+        print(f'error parsing output: {stats}')
+        print(e)
+
+    return (latency_avg, latency_min, latency_max, latency_skipped)
 
 
 def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay, roscore_host, pub_host, sub_host):
-    print(f'run_ros1_pubsub({message_count}, {blob_size}, {rate})')
+    # print(f'run_ros1_pubsub({message_count}, {blob_size}, {rate})')
 
     echo_process = subprocess.Popen(
         [
             'ssh',
+            '-t',
             sub_host,
             f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant echo _tcp_nodelay:={str(tcp_nodelay).lower()}"'],
         preexec_fn=os.setsid,
@@ -122,6 +135,7 @@ def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay, roscore_host, p
     ping_process = subprocess.Popen(
         [
             'ssh',
+            '-t',
             pub_host,
             f'/bin/bash -c "export ROS_MASTER_URI=http://{roscore_host}:11311/ && . $HOME/middleware_olympics/build/ros1/devel/setup.bash && rosrun ros1_contestant ping _tcp_nodelay:={str(tcp_nodelay).lower()} _max_message_count:={ping_message_count} _publish_rate:={rate} _blob_size:={blob_size}"'],
         preexec_fn=os.setsid,
@@ -151,7 +165,16 @@ def run_ros1_pubsub(message_count, blob_size, rate, tcp_nodelay, roscore_host, p
         #print('ping process lookup error')
         pass
 
-    return [float(stats[0]), float(stats[1]), float(stats[2]), int(stats[3])]
+    try:
+        latency_avg = float(stats[0])
+        latency_min = float(stats[1])
+        latency_max = float(stats[2])
+        latency_skipped = int(stats[3])
+    except Exception as e:
+        print(f'error parsing output: {stats}')
+        print(e)
+
+    return (latency_avg, latency_min, latency_max, latency_skipped)
 
 
 def run_ros1(tcp_nodelay, pub_host, sub_host):

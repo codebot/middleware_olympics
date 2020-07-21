@@ -22,6 +22,7 @@ public:
   bool verbose = false;
   int blob_size = 0;
   double publish_rate = 10.0;
+  double echo_connect_time = 1.0;  // give other side some time to connect
 
   std::vector<double> latency_measurements;
 
@@ -82,8 +83,11 @@ int PingNode::run(int argc, char **argv)
 
   nh_private.param<double>("publish_rate", publish_rate, 10.0);
 
-  if (verbose)
-    ROS_INFO("entering spin()...");
+  nh_private.param<double>("startup_delay", echo_connect_time, 1.0);
+
+  ros::Duration(echo_connect_time).sleep();
+
+  // ROS_INFO("sending messages...");
 
   const double publish_interval = 1.0 / publish_rate;
   ros::Time t_last_publish(ros::Time::now());
@@ -116,23 +120,23 @@ int PingNode::run(int argc, char **argv)
     }
 
     ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.001));
+    //printf("num skips: %d\n", num_skips);
 
     if (max_message_count && tx_msg.counter > max_message_count)
       break;
   }
   ros::shutdown();
 
-  printf("num_skips = %d\n", num_skips);
-
   std::sort(latency_measurements.begin(), latency_measurements.end());
   double median = latency_measurements[latency_measurements.size()/2];
 
   printf(
-    "%.6f %.6f %.6f %d\n",
+    "%.6f %.6f %.6f %d %d\n",
     median,
     latency_measurements.front(),
     latency_measurements.back(),
-    num_skips);
+    num_skips,
+    static_cast<int>(tx_msg.counter));
 }
 
 int main(int argc, char **argv)
