@@ -35,13 +35,11 @@ void callback(const zn_sample *sample)
   uint32_t sec_diff = (uint32_t)now.tv_sec - rx_msg->seconds;
   uint32_t nsec_diff = (uint32_t)now.tv_nsec - rx_msg->nanoseconds;
 
-  /*
   if (nsec_diff > 1000000000)
   {
     nsec_diff -= 1000000000;
     sec_diff++;
   }
-  */
 
   double dt = sec_diff + 1.0e-9 * (double)nsec_diff;
   printf("dt = %.6f\n", dt);
