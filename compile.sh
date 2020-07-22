@@ -16,6 +16,7 @@ if [ $MIDDLEWARE_NAME = ros1 ]; then
   cd build/ros1
   source /opt/ros/melodic/setup.bash
   catkin build
+
 elif [ $MIDDLEWARE_NAME = ros2 ]; then
   echo "Building the ROS 2 contestants...."
   mkdir -p build/ros2/src
@@ -23,8 +24,11 @@ elif [ $MIDDLEWARE_NAME = ros2 ]; then
   cd build/ros2
   source /opt/ros/eloquent/setup.bash
   colcon build
+
 elif [ $MIDDLEWARE_NAME = zenoh ]; then
   echo "Building the Zenoh contestants..."
+  mkdir -p build/zenoh
+
 else
   echo "unknown middleware: $MIDDLEWARE_NAME"
 fi
