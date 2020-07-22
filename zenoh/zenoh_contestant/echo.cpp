@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <vector>
 
 #include <signal.h>
@@ -17,21 +18,20 @@ void sigint_handler(int)
   g_done = true;
 }
 
+std::vector<uint8_t> echo_buf;
+
 void callback(const zn_sample *sample)
 {
-  if (g_done)
-    return;
+  if (echo_buf.size() < sample->value.len)
+    echo_buf.resize(sample->value.len);
+  memcpy(&echo_buf[0], sample->value.val, sample->value.len);
 
+  /*
   zn_write(
     g_session,
     "/echo_out",
     (const char *)sample->value.val,
     sample->value.len);
-
-  /*
-  printf(
-    "callback: [%d bytes]\n",
-    static_cast<int>(sample->value.len));
   */
 }
 
@@ -55,8 +55,19 @@ int main(int /*argc*/, char ** /*argv*/)
 
   while (!g_done)
   {
-    printf("sleeping\n");
-    sleep(1);
+    //printf("sleeping\n");
+    if (!echo_buf.empty())
+    {
+      zn_write(
+        g_session,
+        "/echo_out",
+        (const char *)&echo_buf[0],
+        echo_buf.size());
+
+      echo_buf.clear();
+    }
+    usleep(1000);
+    //sleep(1);
   }
 
   zn_undeclare_subscriber(sub);
