@@ -40,7 +40,7 @@ int main(int /*argc*/, char ** /*argv*/)
   signal(SIGINT, sigint_handler);
 
   printf("opening session...\n");
-  g_session = zn_open(CLIENT_MODE, "tcp/127.0.0.1:7447", NULL);
+  g_session = zn_open(PEER_MODE, NULL, NULL);
   if (!g_session)
   {
     printf("unable to open session :(\n");

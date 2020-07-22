@@ -16,7 +16,7 @@ void callback(const zn_sample *sample)
 int main(int /*argc*/, char ** /*argv*/)
 {
   printf("opening session...\n");
-  ZNSession *session = zn_open(PEER_MODE, "tcp/127.0.0.1:7447", NULL);
+  ZNSession *session = zn_open(PEER_MODE, NULL, NULL);
   if (!session)
   {
     printf("unable to open session :(\n");
