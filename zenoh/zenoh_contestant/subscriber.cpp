@@ -10,17 +10,13 @@ extern "C" {
 
 void callback(const zn_sample *sample)
 {
-  printf(
-    "callback: [%s] [%d bytes] [%s]\n",
-    sample->key.val,
-    static_cast<int>(sample->value.len),
-    sample->value.val);
+  printf("callback (%u bytes)\n", sample->value.len);
 }
 
 int main(int /*argc*/, char ** /*argv*/)
 {
   printf("opening session...\n");
-  ZNSession *session = zn_open(CLIENT_MODE, "tcp/127.0.0.1:7447", NULL);
+  ZNSession *session = zn_open(PEER_MODE, "tcp/127.0.0.1:7447", NULL);
   if (!session)
   {
     printf("unable to open session :(\n");

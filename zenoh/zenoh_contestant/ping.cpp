@@ -53,7 +53,7 @@ int main(int /*argc*/, char ** /*argv*/)
   signal(SIGINT, sigint_handler);
 
   printf("opening session...\n");
-  ZNSession *session = zn_open(CLIENT_MODE, "tcp/127.0.0.1:7447", NULL);
+  ZNSession *session = zn_open(PEER_MODE, NULL, NULL);  //"tcp/127.0.0.1:7447", NULL);
   if (!session)
   {
     printf("unable to open session :(\n");
@@ -65,9 +65,10 @@ int main(int /*argc*/, char ** /*argv*/)
   unsigned long resource_id = zn_declare_resource(session, "/blob");
   printf("resource id: %zu\n", resource_id);
   */
-  const int BLOB_SIZE = 1000;
-  stamped_blob_t *tx_msg =
-    (stamped_blob_t *)malloc(sizeof(stamped_blob_t) + BLOB_SIZE);
+  const int BLOB_SIZE = 262000;
+  uint8_t *buffer = (uint8_t *)malloc(sizeof(stamped_blob_t) + BLOB_SIZE);
+  stamped_blob_t *tx_msg = (stamped_blob_t *)buffer;
+//    (stamped_blob_t *)malloc(sizeof(stamped_blob_t) + BLOB_SIZE);
   tx_msg->blob_length = BLOB_SIZE;
 
   srandom(0);
@@ -81,7 +82,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
   for (int count = 0; !g_done; count++)
   {
-    usleep(10000);
+    usleep(500000);
 
     struct timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
@@ -100,6 +101,6 @@ int main(int /*argc*/, char ** /*argv*/)
 
   zn_close(session);
   printf("closed session\n");
-  free(tx_msg);
+  free(buffer);
   return 0;
 }
