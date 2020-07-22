@@ -28,7 +28,7 @@ elif [ $MIDDLEWARE_NAME = ros2 ]; then
 elif [ $MIDDLEWARE_NAME = zenoh ]; then
   echo "Building the Zenoh contestants..."
   mkdir -p build/zenoh
-  if [ ! -d `pwd`/zenoh/zenoh_contestant build/zenoh/zenoh_contestant ]; then
+  if [ ! -d build/zenoh/zenoh_contestant ]; then
     ln -s `pwd`/zenoh/zenoh_contestant build/zenoh
   fi
   cd build/zenoh/zenoh_contestant
