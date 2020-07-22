@@ -21,13 +21,13 @@ void sigint_handler(int)
 
 void callback(const zn_sample *sample)
 {
-  /*
   printf(
     "callback: [%d bytes]\n",
     static_cast<int>(sample->value.len));
-  */
 
   stamped_blob_t *rx_msg = (stamped_blob_t *)sample->value.val;
+
+  printf("rx time: (%u, %u)\n", rx_msg->seconds, rx_msg->nanoseconds);
 
   struct timespec now;
   clock_gettime(CLOCK_REALTIME, &now);
@@ -64,7 +64,7 @@ int main(int /*argc*/, char ** /*argv*/)
   unsigned long resource_id = zn_declare_resource(session, "/blob");
   printf("resource id: %zu\n", resource_id);
   */
-  const int BLOB_SIZE = 10000000;
+  const int BLOB_SIZE = 1000000;
   uint8_t *buffer = (uint8_t *)malloc(sizeof(stamped_blob_t) + BLOB_SIZE);
   stamped_blob_t *tx_msg = (stamped_blob_t *)buffer;
 //    (stamped_blob_t *)malloc(sizeof(stamped_blob_t) + BLOB_SIZE);

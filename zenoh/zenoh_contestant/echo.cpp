@@ -9,6 +9,7 @@
 extern "C" {
 #include "zenoh-ffi.h"
 }
+#include "stamped_blob.h"
 
 static bool g_done = false;
 static ZNSession *g_session = nullptr;
@@ -19,12 +20,19 @@ void sigint_handler(int)
 }
 
 std::vector<uint8_t> echo_buf;
+bool echo_buf_sent = true;
 
 void callback(const zn_sample *sample)
 {
-  if (echo_buf.size() < sample->value.len)
+  stamped_blob_t *msg = (stamped_blob_t *)sample->value.val;
+  printf("rx time: (%u, %u)\n", msg->seconds, msg->nanoseconds);
+
+  if (sample->value.len > echo_buf.size())
     echo_buf.resize(sample->value.len);
+
   memcpy(&echo_buf[0], sample->value.val, sample->value.len);
+
+  echo_buf_sent = false;
 
   /*
   zn_write(
@@ -56,7 +64,7 @@ int main(int /*argc*/, char ** /*argv*/)
   while (!g_done)
   {
     //printf("sleeping\n");
-    if (!echo_buf.empty())
+    if (!echo_buf_sent)
     {
       zn_write(
         g_session,
@@ -64,7 +72,7 @@ int main(int /*argc*/, char ** /*argv*/)
         (const char *)&echo_buf[0],
         echo_buf.size());
 
-      echo_buf.clear();
+      echo_buf_sent = true;
     }
     usleep(1000);
     //sleep(1);
