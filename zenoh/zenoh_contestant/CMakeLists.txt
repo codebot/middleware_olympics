@@ -24,3 +24,9 @@ target_link_libraries(echo zenoh_ffi)
 
 add_executable(ping ping.cpp)
 target_link_libraries(ping zenoh_ffi)
+
+add_executable(table_tennis_server table_tennis_server.cpp)
+target_link_libraries(table_tennis_server zenoh_ffi)
+
+add_executable(table_tennis_receiver table_tennis_receiver.cpp)
+target_link_libraries(table_tennis_receiver zenoh_ffi)
