@@ -74,7 +74,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
       echo_buf_sent = true;
     }
-    usleep(1000);
+    usleep(100);
     //sleep(1);
   }
 
