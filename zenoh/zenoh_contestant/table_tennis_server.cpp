@@ -49,15 +49,16 @@ void callback(const zn_sample *sample)
 
   double dt = sec_diff + 1.0e-9 * (double)nsec_diff;
 
+  /*
   if (dt > 0.1)
   {
     printf("tx time: (%u, %u)\n", rx_msg->seconds, rx_msg->nanoseconds);
     printf("rx time: (%u, %zu)\n", (unsigned)now.tv_sec, now.tv_nsec);
     printf("diff: (%u, %u)\n", sec_diff, nsec_diff);
     printf("  %d dt = %.6f\n", (int)sample->value.len, dt);
-
     printf("\n\n\n");
   }
+  */
 
 
   fprintf(g_log, "%d,%.6f\n", (int)sample->value.len, dt);
@@ -91,7 +92,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
   std::mt19937 gen(1234);  // constant seed!
   std::uniform_real_distribution<double>
-    magnitude(2.0, log(MAX_BLOB_SIZE) / log(10));
+    magnitude(1.0, log(MAX_BLOB_SIZE) / log(10));
 
   /*
   unsigned long resource_id = zn_declare_resource(session, "/blob");
@@ -103,7 +104,7 @@ int main(int /*argc*/, char ** /*argv*/)
     "/ball_return",
     callback);
 
-  for (int count = 0; count < 1000 && !g_done; count++)
+  for (int count = 0; !g_done; count++)
   {
     const int blob_size = static_cast<int>(pow(10.0, magnitude(gen)));
 
@@ -130,7 +131,10 @@ int main(int /*argc*/, char ** /*argv*/)
       usleep(1000);
     }
 
-    usleep(10000);
+    usleep(1000);
+
+    if (count % 100 == 0)
+      printf("%d samples\n", count);
   }
 
   zn_undeclare_subscriber(sub);
