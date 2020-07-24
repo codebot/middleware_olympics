@@ -15,9 +15,13 @@ public:
   : Node("table_tennis_receiver")
   {
     sub = create_subscription<ros2_contestant::msg::StampedBlob>(
-      "echo_in", 10, std::bind(&ReceiverNode::callback, this, _1));
+      "ball_serve",
+      10,
+      std::bind(&ReceiverNode::callback, this, _1));
 
-    pub = create_publisher<ros2_contestant::msg::StampedBlob>("echo_out", 10);
+    pub = create_publisher<ros2_contestant::msg::StampedBlob>(
+      "ball_return",
+      10);
   }
 
   void callback(const ros2_contestant::msg::StampedBlob::SharedPtr msg)
