@@ -40,6 +40,16 @@ ament_target_dependencies(ping rclcpp)
 rosidl_target_interfaces(ping
   ${PROJECT_NAME} rosidl_typesupport_cpp)
 
+add_executable(table_tennis_receiver table_tennis_receiver.cpp)
+ament_target_dependencies(table_tennis_receiver rclcpp)
+rosidl_target_interfaces(table_tennis_receiver
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+add_executable(table_tennis_server table_tennis_server.cpp)
+ament_target_dependencies(table_tennis_server rclcpp)
+rosidl_target_interfaces(table_tennis_server
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
+
 ament_export_dependencies(rosidl_default_runtime)
 
 install(TARGETS
@@ -47,6 +57,8 @@ install(TARGETS
   subscriber
   echo
   ping
+  table_tennis_receiver
+  table_tennis_server
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
