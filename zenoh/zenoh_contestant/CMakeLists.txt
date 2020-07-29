@@ -30,3 +30,9 @@ target_link_libraries(table_tennis_server zenoh_ffi)
 
 add_executable(table_tennis_receiver table_tennis_receiver.cpp)
 target_link_libraries(table_tennis_receiver zenoh_ffi)
+
+add_executable(discovery_publisher discovery_publisher.cpp)
+target_link_libraries(discovery_publisher zenoh_ffi)
+
+add_executable(discovery_subscriber discovery_subscriber.cpp)
+target_link_libraries(discovery_subscriber zenoh_ffi)
