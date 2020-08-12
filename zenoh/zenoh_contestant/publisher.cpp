@@ -22,7 +22,7 @@ int main(int /*argc*/, char ** /*argv*/)
   signal(SIGINT, sigint_handler);
 
   printf("opening session...\n");
-  ZNSession *session = zn_open(PEER_MODE, NULL, NULL);
+  ZNSession *session = zn_open(PEER, NULL, NULL);
   if (!session)
   {
     printf("unable to open session :(\n");

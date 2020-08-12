@@ -48,7 +48,7 @@ int main(int /*argc*/, char ** /*argv*/)
   signal(SIGINT, sigint_handler);
 
   printf("opening session...\n");
-  g_session = zn_open(PEER_MODE, NULL, NULL);
+  g_session = zn_open(PEER, NULL, NULL);
   if (!g_session)
   {
     printf("unable to open session :(\n");
@@ -59,6 +59,7 @@ int main(int /*argc*/, char ** /*argv*/)
   ZNSubscriber *sub = zn_declare_subscriber(
     g_session,
     "/echo_in",
+    zn_subinfo_default(),
     callback);
 
   while (!g_done)

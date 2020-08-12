@@ -16,7 +16,7 @@ void callback(const zn_sample *sample)
 int main(int /*argc*/, char ** /*argv*/)
 {
   printf("opening session...\n");
-  ZNSession *session = zn_open(PEER_MODE, NULL, NULL);
+  ZNSession *session = zn_open(PEER, NULL, NULL);
   if (!session)
   {
     printf("unable to open session :(\n");
@@ -27,6 +27,7 @@ int main(int /*argc*/, char ** /*argv*/)
   ZNSubscriber *sub = zn_declare_subscriber(
     session,
     "/blob",
+    zn_subinfo_default(),
     callback);
 
   while (1)

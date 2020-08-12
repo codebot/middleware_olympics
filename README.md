@@ -52,3 +52,11 @@ Remove the "fake" latency:
 ```
 sudo tc qdisc del dev lo root netem
 ```
+
+# Random pro tips
+
+When using `mininet`, Avahi can be doing random talking which increases the packet count unnecessarily.
+To stop Avahi on Ubuntu:
+```
+sudo service avahi-daemon stop
+```

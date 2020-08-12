@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
   signal(SIGINT, sigint_handler);
 
   printf("opening session...\n");
-  ZNSession *session = zn_open(PEER_MODE, NULL, NULL);
+  ZNSession *session = zn_open(PEER, NULL, NULL);
   if (!session)
   {
     printf("unable to open session :(\n");
@@ -41,37 +41,34 @@ int main(int argc, char ** argv)
   for (int i = 0; i < MSG_SIZE; i++)
     tx_msg->blob_bytes[i] = i;
 
+  struct timespec spec;
+  clock_gettime(CLOCK_REALTIME, &spec);
+  const double t_start = spec.tv_sec + 1.0e-9 * spec.tv_nsec;
+  const double MAX_SECONDS = 5.5;
+
   for (int count = 0; !g_done; count++)
   {
-    usleep(1000);
-    /*
-    struct timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
+    const double t = spec.tv_sec + 1.0e-9 * spec.tv_nsec;
+    if (t - t_start > MAX_SECONDS)
+      break;
+
+    usleep(100000);
+
+    /*
     tx_msg->counter = count;
     tx_msg->seconds = (uint32_t)spec.tv_sec;
     tx_msg->nanoseconds = (uint32_t)spec.tv_nsec;
+
+    const int blob_size = 0;
     tx_msg->blob_length = blob_size;
 
-    // printf("serving blob %d\n", blob_size);
-
+    printf("sending blob (%d)\n", blob_size);
     zn_write(
       session,
-      "/ball_serve",
+      "/world",
       (const char *)tx_msg,
       sizeof(stamped_blob_t) + blob_size);
-
-    g_ball_returned = false;
-
-    // wait until we hear back or until a timeout happens
-    for (int attempt = 0; !g_ball_returned && attempt < 1000; attempt++)
-    {
-      usleep(1000);
-    }
-
-    usleep(1000);
-
-    if (count % 100 == 0)
-      printf("%d samples\n", count);
     */
   }
 
