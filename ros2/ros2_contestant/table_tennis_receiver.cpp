@@ -27,6 +27,7 @@ public:
   void callback(const ros2_contestant::msg::StampedBlob::SharedPtr msg)
   {
     pub->publish(*msg);
+    printf("callback\n");
   }
 };
 

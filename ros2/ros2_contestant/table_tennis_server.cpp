@@ -104,12 +104,16 @@ void ServerNode::serve()
     static_cast<int>(pow(10.0, blob_magnitude_dist(rand_gen)));
   tx_msg.blob.resize(blob_size);
 
+  if (verbose)
+    RCLCPP_INFO(get_logger(), "serve() size: %d", blob_size);
+
   tx_msg.counter++;
   tx_msg.stamp = get_clock()->now();
   pub->publish(tx_msg);
 
   last_tx_counter = tx_msg.counter;
   t_last_serve = tx_msg.stamp;
+  ball_returned = false;
 }
 
 void ServerNode::timer_cb()
